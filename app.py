@@ -147,13 +147,14 @@ class Inventory:
                 continue
             try:
                 product = Product.get(Product.product_id == response)
+                break
             except DoesNotExist:
                 print("\nNo product with that ID number was found.  Please try "
                       "again.")
         print(product.product_name)
         print(f"Quantity:  {product.product_quantity}")
         print(f"Price:  ${product.product_price/100}")
-        print(f"Updated:  {product.date_updated}\n")
+        print(f"Updated:  {product.date_updated.strftime('%m/%d/%Y')}\n")
         self._wait()
 
     def _add_product(self):
