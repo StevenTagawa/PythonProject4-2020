@@ -137,6 +137,13 @@ class Inventory:
         while True:
             response = input(
                 "\nPlease enter a product ID, or 'Q' to return to the menu:  ")
+            if response == "":
+                confirm = input("You didn't enter a product ID.  Do you want "
+                                "to return to the main menu? [Y/N]  ")
+                if confirm.upper() == "Y":
+                    return
+                else:
+                    continue
             if response.upper() == "Q":
                 return
             try:
@@ -170,9 +177,17 @@ class Inventory:
         new = Product()
         print("\nPlease enter the product name, quantity and price below.")
         print("Enter 'Q' to return to the menu.\n")
-        new.product_name = input("Product name:  ")
-        if new.product_name.upper() == "Q":
-            return None
+        while True:
+            new.product_name = input("Product name:  ")
+            if new.product_name.upper() == "Q":
+                return None
+            elif new.product_name == "":
+                confirm = input("You did not enter a product name.  Do you want"
+                                " to return to the menu? [Y/N]  ")
+                if confirm.upper() == "Y":
+                    return
+            else:
+                break
         while True:
             new.product_quantity = input("Quantity:  ")
             if new.product_quantity.upper() == "Q":
