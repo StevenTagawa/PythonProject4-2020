@@ -324,6 +324,9 @@ class Inventory:
 
 # EXECUTION BEGINS HERE
 if __name__ == "__main__":
-    inventory = Inventory()
-    inventory.go()
+    try:
+        inventory = Inventory()
+        inventory.go()
+    except KeyboardInterrupt:
+        print("\nScript halted by user.")
 # EXECUTION ENDS HERE
