@@ -92,7 +92,7 @@ class Inventory:
     def _update_latest(self, new, verbose=False):
         """Compares duplicate records and saves the newer record."""
         if verbose:
-            print(f"\nWarning: item'{new.product_name}' already exists.")
+            print(f"\nWarning: Item '{new.product_name}' already exists.")
             if not self._confirm(prompt="Overwrite existing data?"):
                 print(f"Item '{new.product_name}' not saved.")
                 self._wait()
@@ -171,7 +171,7 @@ class Inventory:
         print(f"{'-'*len(product.product_name)}\n{product.product_name}\n"
               f"{'-'*len(product.product_name)}")
         print(f"Quantity:  {product.product_quantity}")
-        print(f"Price:  ${product.product_price/100}")
+        print(f"Price:  ${product.product_price/100:.2f}")
         print(f"Updated:  {product.date_updated.strftime('%m/%d/%Y')}\n")
         self._wait()
 
@@ -205,6 +205,10 @@ class Inventory:
                 return None
             try:
                 new.product_quantity = int(new.product_quantity)
+                if new.product_quantity < 0:
+                    print("Sorry the quantity cannot be less than zero.  Please"
+                          " try again, or enter 'Q' to return to the menu.")
+                    continue
                 break
             except ValueError:
                 print("Sorry, the quantity must be a number.  Please try again,"
