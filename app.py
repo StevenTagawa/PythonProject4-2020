@@ -18,7 +18,7 @@ class Product(Model):
     product_name = CharField(max_length=255, unique=True)
     product_quantity = IntegerField(default=0)
     product_price = IntegerField(default=0)
-    date_updated = DateTimeField(default=datetime.datetime.now)
+    date_updated = DateField(default=datetime.date.today)
 
     class Meta:
         database = db
@@ -66,7 +66,8 @@ class Inventory:
             )
             product["product_quantity"] = int(product["product_quantity"])
             product["date_updated"] = (
-                datetime.datetime.strptime(product["date_updated"], "%m/%d/%Y"))
+                datetime.datetime.strptime(
+                    product["date_updated"], "%m/%d/%Y").date())
 
     def _save_csv(self):
         """Saves the data from the csv file to the database file."""
@@ -80,19 +81,14 @@ class Inventory:
             try:
                 new.save()
                 count += 1
-                print(count)
             except IntegrityError:
-                if self._update_latest(new):
-                    count += 1
+                self._update_latest(new)
         self.products = []
         print(f"Database created.  {count} items added.")
         self._wait()
 
     def _update_latest(self, new, verbose=False):
-        """Compares duplicate records and saves the newer record.
-
-        Returns True if the existing record was updated; False if it was not.
-        """
+        """Compares duplicate records and saves the newer record."""
         if verbose:
             print(f"{new.product_name} already exists.")
         existing = Product.get(Product.product_name == new.product_name)
@@ -103,11 +99,8 @@ class Inventory:
             existing.save()
             if verbose:
                 print(f"{new.product_name} updated.")
-                self._wait()
-            return True
         if verbose:
             self._wait()
-        return False
 
     def _main_loop(self):
         """The main execution loop.  Runs until the user quits."""
