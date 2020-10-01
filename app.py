@@ -92,15 +92,19 @@ class Inventory:
     def _update_latest(self, new, verbose=False):
         """Compares duplicate records and saves the newer record."""
         if verbose:
-            print(f"{new.product_name} already exists.")
+            print(f"\nWarning: item'{new.product_name}' already exists.")
+            if not self._confirm(prompt="Overwrite existing data?"):
+                print(f"Item '{new.product_name}' not saved.")
+                self._wait()
+                return
         existing = Product.get(Product.product_name == new.product_name)
-        if existing.date_updated < new.date_updated:
+        if existing.date_updated <= new.date_updated:
             existing.product_quantity = new.product_quantity
             existing.product_price = new.product_price
             existing.date_updated = new.date_updated
             existing.save()
             if verbose:
-                print(f"{new.product_name} updated.")
+                print(f"Item '{new.product_name}' updated.")
         if verbose:
             self._wait()
 
@@ -175,7 +179,7 @@ class Inventory:
         """Adds a product to the database, or updates a product."""
         new = self._get_product_info()
         if new:
-            if self._confirm():
+            if self._confirm(prompt="Save this item?"):
                 self._save_product(new)
 
     @staticmethod
@@ -219,10 +223,10 @@ class Inventory:
         return new
 
     @staticmethod
-    def _confirm():
+    def _confirm(prompt="Confirm:"):
         """Asks the user for confirmation before saving a new product."""
         while True:
-            response = input("\nSave this product? [Y/N]  ")
+            response = input(f"\n{prompt} [Y/N]  ")
             if response.upper() == "Y":
                 return True
             elif response.upper() == "N":
