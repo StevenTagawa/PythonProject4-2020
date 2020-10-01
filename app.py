@@ -38,7 +38,6 @@ class Inventory:
     def go(self):
         self.clear()
         self._welcome()
-        self.products = []
         self._init_db()
         self._load_csv()
         self._convert_csv()
@@ -71,7 +70,7 @@ class Inventory:
 
     def _save_csv(self):
         """Saves the data from the csv file to the database file."""
-        db.connect()
+        count = 0
         for product in self.products:
             new = Product()
             new.product_name = product["product_name"]
@@ -80,23 +79,35 @@ class Inventory:
             new.date_updated = product["date_updated"]
             try:
                 new.save()
+                count += 1
+                print(count)
             except IntegrityError:
-                self._update_latest(new)
-        db.close()
-        print(f"Database created.  {len(self.products)} items added.")
+                if self._update_latest(new):
+                    count += 1
+        self.products = []
+        print(f"Database created.  {count} items added.")
         self._wait()
 
     def _update_latest(self, new, verbose=False):
+        """Compares duplicate records and saves the newer record.
+
+        Returns True if the existing record was updated; False if it was not.
+        """
         if verbose:
             print(f"{new.product_name} already exists.")
         existing = Product.get(Product.product_name == new.product_name)
         if existing.date_updated < new.date_updated:
-            existing.delete_instance()
-            new.save()
+            existing.product_quantity = new.product_quantity
+            existing.product_price = new.product_price
+            existing.date_updated = new.date_updated
+            existing.save()
             if verbose:
                 print(f"{new.product_name} updated.")
+                self._wait()
+            return True
         if verbose:
             self._wait()
+        return False
 
     def _main_loop(self):
         """The main execution loop.  Runs until the user quits."""
@@ -227,7 +238,8 @@ class Inventory:
         """Saves a new product to the database, or updates a product."""
         try:
             new.save()
-            print(f"{new.product_name} saved to database.")
+            print(f"\n{new.product_name} saved to database.  "
+                  f"ID: {new.product_id}")
             self._wait()
         except IntegrityError:
             self._update_latest(new, verbose=True)
@@ -240,9 +252,7 @@ class Inventory:
 
     def _load_db(self):
         """Loads data from the database file."""
-        db.connect()
         products = Product.select()
-        db.close()
         for product in products:
             self.products.append(
                 {"product_name": product.product_name,
