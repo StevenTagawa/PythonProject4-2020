@@ -71,6 +71,7 @@ class Inventory:
 
     def _save_csv(self):
         """Saves the data from the csv file to the database file."""
+        existing = Product.select().count()
         count = 0
         for product in self.products:
             new = Product()
@@ -84,7 +85,8 @@ class Inventory:
             except IntegrityError:
                 self._update_latest(new)
         self.products = []
-        print(f"Database created.  {count} items added.")
+        print(f"Database opened.  {existing} items in database.  "
+              f"{count} items added.")
         self._wait()
 
     def _update_latest(self, new, verbose=False):
@@ -162,7 +164,8 @@ class Inventory:
             except DoesNotExist:
                 print("\nNo product with that ID number was found.  Please try "
                       "again.")
-        print(product.product_name)
+        print(f"{'-'*len(product.product_name)}\n{product.product_name}\n"
+              f"{'-'*len(product.product_name)}")
         print(f"Quantity:  {product.product_quantity}")
         print(f"Price:  ${product.product_price/100}")
         print(f"Updated:  {product.date_updated.strftime('%m/%d/%Y')}\n")
@@ -276,6 +279,7 @@ class Inventory:
             writer.writeheader()
             for product in self.products:
                 writer.writerow(product)
+        self.products = []
         print("Backup file created.")
         self._wait()
 
